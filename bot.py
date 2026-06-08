@@ -6,6 +6,8 @@ import os
 
 TOKEN = os.getenv("TOKEN")
 
+MY_ID = 1022218025539223695  # 🔒 TON ID
+
 intents = discord.Intents.default()
 intents.guilds = True
 intents.members = True
@@ -13,6 +15,16 @@ intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 
+# =========================
+# LOCK GLOBAL (TON ID UNIQUEMENT)
+# =========================
+def is_me(interaction: discord.Interaction) -> bool:
+    return interaction.user.id == MY_ID
+
+
+# =========================
+# READY
+# =========================
 @bot.event
 async def on_ready():
     await bot.tree.sync()
@@ -20,19 +32,20 @@ async def on_ready():
 
 
 # =========================
-# CREATE SALONS COMMAND
+# CREATE SALONS
 # =========================
 @bot.tree.command(
     name="createsalons",
-    description="Crée des salons et des rôles sans rien supprimer"
+    description="Crée des salons et des rôles"
 )
 @app_commands.describe(
     nom="Nom des salons",
-    nombre="Nombre de salons (max 500)",
+    nombre="Nombre de salons (max 5000)",
     nom_serveur="Nouveau nom du serveur",
     nom_role="Nom des rôles",
     categorie_id="ID de la catégorie (optionnel)"
 )
+@app_commands.check(is_me)
 @app_commands.checks.has_permissions(
     manage_channels=True,
     manage_roles=True,
@@ -47,9 +60,9 @@ async def createsalons(
     categorie_id: str = None
 ):
 
-    if nombre < 1 or nombre > 500:
+    if nombre < 1 or nombre > 5000:
         await interaction.response.send_message(
-            "❌ Le nombre doit être entre 1 et 500.",
+            "❌ Le nombre doit être entre 1 et 5000.",
             ephemeral=True
         )
         return
@@ -61,23 +74,23 @@ async def createsalons(
 
     guild = interaction.guild
 
-    # Renommer le serveur
+    # rename serveur
     try:
         await guild.edit(name=nom_serveur)
-    except discord.Forbidden:
+    except:
         pass
 
-    # Créer les rôles
+    # rôles
     try:
         for i in range(5):
             await guild.create_role(name=f"{nom_role}-{i + 1}")
     except Exception as e:
         await interaction.edit_original_response(
-            content=f"❌ Erreur création rôles : {e}"
+            content=f"❌ Erreur rôles : {e}"
         )
         return
 
-    # Catégorie optionnelle
+    # catégorie
     categorie = None
     if categorie_id:
         try:
@@ -85,7 +98,6 @@ async def createsalons(
         except:
             pass
 
-    # Création des salons
     semaphore = asyncio.Semaphore(10)
 
     async def create_channel(i):
@@ -107,27 +119,28 @@ async def createsalons(
     await interaction.edit_original_response(
         content=(
             f"✅ Terminé !\n"
-            f"📌 Serveur renommé : {nom_serveur}\n"
-            f"📌 Salons créés : {nombre}\n"
-            f"📌 Rôles créés : 5"
+            f"📌 Serveur : {nom_serveur}\n"
+            f"📌 Salons : {nombre}\n"
+            f"📌 Rôles : 5"
         )
     )
 
 
 # =========================
-# DELETE ALL CHANNELS COMMAND
+# DELETE ALL CHANNELS
 # =========================
 @bot.tree.command(
     name="delete_all_channels",
-    description="Supprime tous les salons du serveur (sans confirmation)"
+    description="Supprime tous les salons du serveur"
 )
+@app_commands.check(is_me)
 @app_commands.checks.has_permissions(manage_channels=True)
 async def delete_all_channels(interaction: discord.Interaction):
 
     guild = interaction.guild
 
     await interaction.response.send_message(
-        "🧨 Suppression de tous les salons en cours...",
+        "🧨 Suppression en cours...",
         ephemeral=True
     )
 
@@ -149,9 +162,18 @@ async def delete_all_channels(interaction: discord.Interaction):
 # =========================
 @createsalons.error
 async def createsalons_error(interaction, error):
-    if isinstance(error, app_commands.MissingPermissions):
+    if isinstance(error, app_commands.CheckFailure):
         await interaction.response.send_message(
-            "❌ Permissions insuffisantes.",
+            "❌ Tu n’as pas accès à cette commande.",
+            ephemeral=True
+        )
+
+
+@delete_all_channels.error
+async def delete_error(interaction, error):
+    if isinstance(error, app_commands.CheckFailure):
+        await interaction.response.send_message(
+            "❌ Tu n’as pas accès à cette commande.",
             ephemeral=True
         )
 
