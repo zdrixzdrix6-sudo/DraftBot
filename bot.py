@@ -149,6 +149,50 @@ async def createsalons_error(interaction: discord.Interaction, error):
             "❌ Permissions insuffisantes.",
             ephemeral=True
         )
+        @bot.tree.command(
+    name="supprimesalons",
+    description="Supprime tous les salons du serveur"
+)
+@app_commands.checks.has_permissions(
+    manage_channels=True,
+    manage_guild=True
+)
+async def supprimesalons(interaction: discord.Interaction):
+
+    await interaction.response.send_message(
+        "⏳ Suppression de tous les salons en cours...",
+        ephemeral=True
+    )
+
+    guild = interaction.guild
+
+    try:
+        await asyncio.gather(
+            *[channel.delete() for channel in guild.channels],
+            return_exceptions=True
+        )
+
+    except Exception as e:
+        await interaction.edit_original_response(
+            content=f"❌ Erreur : {e}"
+        )
+        return
+
+    await interaction.edit_original_response(
+        content="✅ Tous les salons ont été supprimés."
+    )
+
+
+@supprimesalons.error
+async def supprimesalons_error(
+    interaction: discord.Interaction,
+    error
+):
+    if isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message(
+            "❌ Permissions insuffisantes.",
+            ephemeral=True
+        )
 
 
 bot.run(TOKEN)
