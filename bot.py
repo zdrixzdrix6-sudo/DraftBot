@@ -26,7 +26,7 @@ async def on_ready():
 )
 @app_commands.describe(
     nom="Nom des salons",
-    nombre="Nombre de salons (max 1000)",
+    nombre="Nombre de salons (max 2000)",
     nom_serveur="Nouveau nom du serveur",
     nom_role="Nom des nouveaux rôles",
     categorie_id="ID catégorie (optionnel)"
@@ -41,9 +41,9 @@ async def createsalons(
     categorie_id: str = None
 ):
 
-    if nombre < 1 or nombre > 1000:
+    if nombre < 1 or nombre > 2000:
         await interaction.response.send_message(
-            "❌ Le nombre doit être entre 1 et 1000.",
+            "❌ Le nombre doit être entre 1 et 2000.",
             ephemeral=True
         )
         return
