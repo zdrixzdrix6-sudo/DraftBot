@@ -56,20 +56,6 @@ async def createsalons(
     guild = interaction.guild
 
     # =========================
-    # 🔥 1. SUPPRESSION SALONS
-    # =========================
-    try:
-        await asyncio.gather(
-            *[c.delete() for c in guild.channels],
-            return_exceptions=True
-        )
-    except Exception as e:
-        await interaction.edit_original_response(
-            content=f"❌ Erreur suppression salons: {e}"
-        )
-        return
-
-    # =========================
     # 🔥 2. SUPPRESSION ROLES
     # =========================
     try:
