@@ -8,8 +8,7 @@ TOKEN = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
 intents.guilds = True
-intents.guild_messages = True
-intents.members = True  # utile pour rôles
+intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -20,18 +19,25 @@ async def on_ready():
     print(f"✅ Bot connecté : {bot.user}")
 
 
+# =========================
+# CREATE SALONS COMMAND
+# =========================
 @bot.tree.command(
     name="createsalons",
-    description="Supprime tout + recrée salons + rôles + rename serveur"
+    description="Crée des salons et des rôles sans rien supprimer"
 )
 @app_commands.describe(
     nom="Nom des salons",
-    nombre="Nombre de salons (max 2000)",
+    nombre="Nombre de salons (max 500)",
     nom_serveur="Nouveau nom du serveur",
-    nom_role="Nom des nouveaux rôles",
-    categorie_id="ID catégorie (optionnel)"
+    nom_role="Nom des rôles",
+    categorie_id="ID de la catégorie (optionnel)"
 )
-@app_commands.checks.has_permissions(manage_channels=True, manage_guild=True)
+@app_commands.checks.has_permissions(
+    manage_channels=True,
+    manage_roles=True,
+    manage_guild=True
+)
 async def createsalons(
     interaction: discord.Interaction,
     nom: str,
@@ -41,86 +47,55 @@ async def createsalons(
     categorie_id: str = None
 ):
 
-    if nombre < 1 or nombre > 2000:
+    if nombre < 1 or nombre > 500:
         await interaction.response.send_message(
-            "❌ Le nombre doit être entre 1 et 2000.",
+            "❌ Le nombre doit être entre 1 et 500.",
             ephemeral=True
         )
         return
 
     await interaction.response.send_message(
-        "⏳ Nettoyage du serveur (salons + rôles) en cours...",
+        "⏳ Création en cours...",
         ephemeral=True
     )
 
     guild = interaction.guild
 
-    # =========================
-    # 🔥 2. SUPPRESSION ROLES
-    # =========================
-    try:
-        await asyncio.gather(
-            *[
-                r.delete()
-                for r in guild.roles
-                if not r.is_default() and not r.managed
-            ],
-            return_exceptions=True
-        )
-    except Exception as e:
-        await interaction.edit_original_response(
-            content=f"❌ Erreur suppression rôles: {e}"
-        )
-        return
-
-    # =========================
-    # 🔥 3. RENOMMER SERVEUR
-    # =========================
+    # Renommer le serveur
     try:
         await guild.edit(name=nom_serveur)
     except discord.Forbidden:
-        await interaction.edit_original_response(
-            content="❌ Permission refusée pour renommer le serveur."
-        )
-        return
+        pass
 
-    # =========================
-    # 🔥 4. RECREER ROLES
-    # =========================
+    # Créer les rôles
     try:
-        roles = []
-        for i in range(5):  # tu peux changer le nombre
-            role = await guild.create_role(name=f"{nom_role}-{i+1}")
-            roles.append(role)
+        for i in range(5):
+            await guild.create_role(name=f"{nom_role}-{i + 1}")
     except Exception as e:
         await interaction.edit_original_response(
-            content=f"❌ Erreur création rôles: {e}"
+            content=f"❌ Erreur création rôles : {e}"
         )
         return
 
-    # =========================
-    # 🔥 5. CATEGORIE OPTIONNELLE
-    # =========================
+    # Catégorie optionnelle
     categorie = None
     if categorie_id:
         try:
             categorie = guild.get_channel(int(categorie_id))
         except:
-            categorie = None
+            pass
 
-    # =========================
-    # 🔥 6. CREATION SALONS
-    # =========================
+    # Création des salons
     semaphore = asyncio.Semaphore(10)
 
     async def create_channel(i):
         async with semaphore:
             channel = await guild.create_text_channel(
-                name=f"{nom}-{i+1}",
+                name=f"{nom}-{i + 1}",
                 category=categorie
             )
             try:
-                await channel.send("@everyone RAID BY A2S")
+                await channel.send("@everyone")
             except:
                 pass
 
@@ -129,65 +104,51 @@ async def createsalons(
         return_exceptions=True
     )
 
-    # =========================
-    # ✅ FIN
-    # =========================
     await interaction.edit_original_response(
         content=(
-            f"✅ Serveur nettoyé et recréé !\n"
-            f"- Serveur: `{nom_serveur}`\n"
-            f"- Salons: {nombre}\n"
-            f"- Rôles: 5 (`{nom_role}-X`)"
+            f"✅ Terminé !\n"
+            f"📌 Serveur renommé : {nom_serveur}\n"
+            f"📌 Salons créés : {nombre}\n"
+            f"📌 Rôles créés : 5"
         )
     )
 
 
-@createsalons.error
-async def createsalons_error(interaction: discord.Interaction, error):
-    if isinstance(error, app_commands.MissingPermissions):
-        await interaction.response.send_message(
-            "❌ Permissions insuffisantes.",
-            ephemeral=True
-        )
-        @bot.tree.command(
-    name="supprimesalons",
-    description="Supprime tous les salons du serveur"
+# =========================
+# DELETE ALL CHANNELS COMMAND
+# =========================
+@bot.tree.command(
+    name="delete_all_channels",
+    description="Supprime tous les salons du serveur (sans confirmation)"
 )
-@app_commands.checks.has_permissions(
-    manage_channels=True,
-    manage_guild=True
-)
-async def supprimesalons(interaction: discord.Interaction):
-
-    await interaction.response.send_message(
-        "⏳ Suppression de tous les salons en cours...",
-        ephemeral=True
-    )
+@app_commands.checks.has_permissions(manage_channels=True)
+async def delete_all_channels(interaction: discord.Interaction):
 
     guild = interaction.guild
 
-    try:
-        await asyncio.gather(
-            *[channel.delete() for channel in guild.channels],
-            return_exceptions=True
-        )
+    await interaction.response.send_message(
+        "🧨 Suppression de tous les salons en cours...",
+        ephemeral=True
+    )
 
-    except Exception as e:
-        await interaction.edit_original_response(
-            content=f"❌ Erreur : {e}"
-        )
-        return
+    for channel in guild.channels:
+        try:
+            await channel.delete()
+            await asyncio.sleep(0.2)
+        except:
+            pass
 
-    await interaction.edit_original_response(
-        content="✅ Tous les salons ont été supprimés."
+    await interaction.followup.send(
+        "✅ Tous les salons ont été supprimés.",
+        ephemeral=True
     )
 
 
-@supprimesalons.error
-async def supprimesalons_error(
-    interaction: discord.Interaction,
-    error
-):
+# =========================
+# ERROR HANDLER
+# =========================
+@createsalons.error
+async def createsalons_error(interaction, error):
     if isinstance(error, app_commands.MissingPermissions):
         await interaction.response.send_message(
             "❌ Permissions insuffisantes.",
