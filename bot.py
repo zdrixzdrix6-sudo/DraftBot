@@ -90,7 +90,12 @@ async def createsalons(
     categorie = None
     if categorie_id:
         try:
-            categorie = guild.get_channel(int(categorie_id))
+            from discord import CategoryChannel
+
+if isinstance(categorie, CategoryChannel):
+    pass
+else:
+    categorie = None
         except:
             pass
 
