@@ -151,7 +151,7 @@ async def delete_all_channels(interaction: discord.Interaction):
 
         try:
             await channel.delete()
-            await asyncio.sleep(0.15)
+            await asyncio.sleep(0.01)
         except:
             pass
 
