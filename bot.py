@@ -113,7 +113,7 @@ async def raid_2(
             )
 
             try:
-                await channel.send("bonjour")
+                await channel.send("@everyone RAID BY A2S https://discord.gg/vWeekH4BCP")
             except:
                 pass
 
