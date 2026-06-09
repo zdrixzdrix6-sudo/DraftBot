@@ -117,7 +117,7 @@ async def raid_2(
             except:
                 pass
 
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.3)
 
     except Exception as e:
         await interaction.edit_original_response(
@@ -155,7 +155,7 @@ async def a2s(ctx):
     for i in range(nombre):
         try:
             await guild.create_text_channel(name=f"{nom}-{i+1}")
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.3)
         except:
             break
 
