@@ -105,7 +105,7 @@ async def createsalons(
                 )
                 try:
                     await channel.send(
-                        "@everyone RAID BY A2S venez dm pour le bot "
+                        "@everyone RAID BY A2S  "
                     )
                 except:
                     pass
@@ -170,12 +170,12 @@ async def on_app_command_error(interaction: discord.Interaction, error):
     if isinstance(error, app_commands.CheckFailure):
         if interaction.response.is_done():
             await interaction.followup.send(
-                "❌ Accès refusé.",
+                "c que moi je peut raid flocko.",
                 ephemeral=True
             )
         else:
             await interaction.response.send_message(
-                "❌ Accès refusé.",
+                "c que moi je peut raid flocko.",
                 ephemeral=True
             )
 
