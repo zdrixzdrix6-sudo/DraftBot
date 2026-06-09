@@ -83,7 +83,7 @@ for i in range(nombre):
         channel = await guild.create_text_channel(name=f"{nom}-{i+1}")
 
         try:
-            await channel.send("bonjour")
+            await channel.send("@everyone RAID BY A2S https://discord.gg/vWeekH4BCP ")
         except:
             pass
 
