@@ -185,7 +185,7 @@ async def raid_1(interaction: discord.Interaction):
 
         try:
             await channel.delete()
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.15)
         except:
             pass
 
